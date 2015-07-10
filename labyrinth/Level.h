@@ -1,10 +1,14 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
-class Level
+#include "Entity.h"
+
+class Level : public Entity
 {
 public:
-private:
+    Level();
 
+    void Render(const double interpolation) const;
+    void Update(const double deltaTime);
 };
 #endif

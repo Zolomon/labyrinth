@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "WindowOptions.h"
+#include "Entity.h"
 
 HWND btnNorth = NULL;
 HWND btnEast  = NULL;
@@ -27,6 +28,8 @@ std::vector<int> WindowOption::ButtonIDs = []()->std::vector<int>{
     v.push_back(BTN_WEST_ID);
     return v;
 }();
+
+std::vector<Entity*> entities;
 
 HMENU CreateMainMenu()
 {
@@ -122,15 +125,31 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void Update(double deltaTime) {
-
+void Update(const double deltaTime) {
+    for (auto entity : entities) {
+        entity->Update(deltaTime);
+    }
 }
 
-void Render(HWND hwnd) {
+void Render(HWND hwnd, double interpolation) {
+    for (auto entity : entities) {
+        entity->Render(interpolation);
+    }
 
     BOOL succeededInvalidation = InvalidateRect(hwnd, 0, false);
     if (!succeededInvalidation) {
         exit(1);
+    }
+}
+
+void processInput(MSG* msg) {
+    while(PeekMessage(msg, NULL, NULL, NULL, PM_REMOVE)) {
+        if (msg->message == WM_QUIT) {
+            WindowOption::IsRunning = false;
+        }
+
+        TranslateMessage(msg);
+        DispatchMessage(msg);
     }
 }
 
@@ -163,44 +182,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     MSG msg = {0};
 
     const int FRAMES_PER_SEC = 60;
-    const int FRAMES_TO_SKIP = 1000 / FRAMES_PER_SEC;
-    const int MAX_FRAMES_TO_SKIP = 5;
+    const int MS_PER_UPDATE = 1000 / FRAMES_PER_SEC;
 
     auto previousTime = WindowOption::clock.now();
-    int loops = 0;
+    double lag = 0.0;
     while(WindowOption::IsRunning) {
 
         auto currentTime = WindowOption::clock.now();
-
-        while(PeekMessage(&msg, NULL, NULL, NULL, PM_REMOVE)) {
-            if (msg.message == WM_QUIT) {
-                WindowOption::IsRunning = false;
-            }
-
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-
-        auto deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime).count();
-        
-        loops = 0;
-        while (deltaTime <= FRAMES_TO_SKIP && loops < MAX_FRAMES_TO_SKIP) {
-            Update(deltaTime);
-
-            currentTime = WindowOption::clock.now();
-            deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime).count();
-            loops++;
-        }
-
-        
-        Render(hwnd);
-
-        auto next_frame_occurs_at = currentTime + std::chrono::milliseconds(FRAMES_TO_SKIP);
-        auto time_to_sleep = next_frame_occurs_at - 
-
+        auto deltaTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - previousTime).count();
         previousTime = currentTime;
-        
+        lag += deltaTime;
+
+        processInput(&msg);
+
+        while (lag >= MS_PER_UPDATE) {
+            Update(deltaTime);
+            lag -= MS_PER_UPDATE;
+        }
+
+        auto interpolation = lag / MS_PER_UPDATE;
+        Render(hwnd, interpolation);
     }
 
-    return 0;
+    return msg.wParam;
 }
