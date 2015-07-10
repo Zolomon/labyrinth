@@ -78,10 +78,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Entity.cc" />
+    <ClCompile Include="Game.cc" />
+    <ClCompile Include="Level.cc" />
     <ClCompile Include="main.cc" />
+    <ClCompile Include="Player.cc" />
     <ClCompile Include="WindowOptions.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="Level.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="WindowOptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

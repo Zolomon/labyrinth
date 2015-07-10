@@ -4,22 +4,18 @@
 class Entity
 {
 public:
-    Entity();
+    Entity(double x, double y);
     ~Entity();
 
-    void Render() const;
-    void Update();
+    virtual void Render(const double interpolation) const = 0;
+    virtual void Update(const double deltaTime) = 0;
 
-private:
+    double x;
+    double y;
 
+    double vx;
+    double vy;
+
+    BITMAP bm;
 };
-
-Entity::Entity()
-{
-}
-
-Entity::~Entity()
-{
-}
-
 #endif
