@@ -2,20 +2,17 @@
 #define GAME_H
 
 #include <Windows.h>
+#include <tchar.h>
 #include <vector>
+#include <memory>
 #include <map>
 
 #include "Entity.h"
+#include "Resource.h"
+#include "Player.h"
 
 class Game {
 public:
-    enum Resource
-    {
-        Player,
-        GrassTile,
-        WallTile
-    };
-
     Game(HWND hwnd, HDC hdc);
     ~Game() {};
 
@@ -24,12 +21,12 @@ public:
     void Render(const double interpolation) const;
     void End();
 
-    std::vector<Entity*> entities;
-    std::map<Game::Resource, HBITMAP> bitmaps;
+    std::vector<std::shared_ptr<Entity>> entities;
+    std::map<Resource, HBITMAP> bitmaps;
     HWND hwnd;
     HDC hdc;
 private:
-    HBITMAP LoadBitmap(Game::Resource resource, wchar_t** filename);
+    HBITMAP LoadBitmap(Resource resource, wchar_t** filename);
 };
 
 #endif

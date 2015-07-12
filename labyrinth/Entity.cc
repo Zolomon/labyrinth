@@ -1,6 +1,6 @@
 #include "Entity.h"
 
-Entity::Entity(const double x, const double y) : x(x), y(y), vx(0), vy(0) {
+Entity::Entity(bool isDrawable, const double x, const double y) : IsDrawable(isDrawable), x(x), y(y), vx(0), vy(0) {
 }
 
 Entity::~Entity() { }

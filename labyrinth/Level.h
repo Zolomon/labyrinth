@@ -8,7 +8,7 @@ class Level : public Entity
 public:
     Level();
 
-    void Render(const double interpolation) const;
     void Update(const double deltaTime);
+    void Render(HWND hwnd, HDC hdc, const double interpolation) const;
 };
 #endif

@@ -5,6 +5,7 @@
 
 #include "WindowOptions.h"
 #include "Entity.h"
+#include "Game.h"
 
 HWND btnNorth = NULL;
 HWND btnEast  = NULL;
@@ -19,6 +20,8 @@ const int BTN_NORTH_ID = 4;
 const int BTN_EAST_ID = 5;
 const int BTN_SOUTH_ID = 6;
 const int BTN_WEST_ID = 7;
+
+Game* game;
 
 std::vector<int> WindowOption::ButtonIDs = []()->std::vector<int>{
     std::vector<int> v;
@@ -125,24 +128,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void Update(const double deltaTime) {
-    for (auto entity : entities) {
-        entity->Update(deltaTime);
-    }
+void Update(Game* game, const double deltaTime) {
+    game->Update(deltaTime);
 }
 
-void Render(HWND hwnd, double interpolation) {
-    for (auto entity : entities) {
-        entity->Render(interpolation);
-    }
-
-    BOOL succeededInvalidation = InvalidateRect(hwnd, 0, false);
-    if (!succeededInvalidation) {
-        exit(1);
-    }
+void Render(Game* game,double interpolation) {
+    game->Render(interpolation);
 }
 
-void processInput(MSG* msg) {
+void processInput(Game* game, MSG* msg) {
     while(PeekMessage(msg, NULL, NULL, NULL, PM_REMOVE)) {
         if (msg->message == WM_QUIT) {
             WindowOption::IsRunning = false;
@@ -179,6 +173,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     UpdateWindow(hwnd);
     ShowWindow(hwnd, nCmdShow);
 
+    game = &Game(hwnd, GetDC(hwnd));
+    game->Initialize();
+
     MSG msg = {0};
 
     const int FRAMES_PER_SEC = 60;
@@ -193,15 +190,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         previousTime = currentTime;
         lag += deltaTime;
 
-        processInput(&msg);
+        processInput(game, &msg);
 
         while (lag >= MS_PER_UPDATE) {
-            Update(deltaTime);
+            Update(game, deltaTime);
             lag -= MS_PER_UPDATE;
         }
 
         auto interpolation = lag / MS_PER_UPDATE;
-        Render(hwnd, interpolation);
+        Render(game, interpolation);
     }
 
     return msg.wParam;
