@@ -129,15 +129,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void Update(std::shared_ptr<Game> game, const double deltaTime) {
+void Update(const std::shared_ptr<Game>&, const double deltaTime) {
     game->Update(deltaTime);
 }
 
-void Render(std::shared_ptr<Game> game, double interpolation) {
+void Render(const std::shared_ptr<Game>&, double interpolation) {
     game->Render(interpolation);
 }
 
-void processInput(std::shared_ptr<Game> game, MSG* msg) {
+void processInput(const std::shared_ptr<Game>& game, MSG* msg) {
     while(PeekMessage(msg, NULL, NULL, NULL, PM_REMOVE)) {
         if (msg->message == WM_QUIT) {
             WindowOption::IsRunning = false;
@@ -191,15 +191,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         previousTime = currentTime;
         lag += deltaTime;
 
-        processInput(std::move(game), &msg);
+        processInput(game, &msg);
 
         while (lag >= MS_PER_UPDATE) {
-            Update(std::move(game), deltaTime);
+            Update(game, deltaTime);
             lag -= MS_PER_UPDATE;
         }
 
         auto interpolation = lag / MS_PER_UPDATE;
-        Render(std::move(game), interpolation);
+        Render(game, interpolation);
     }
 
     return msg.wParam;

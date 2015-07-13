@@ -10,7 +10,7 @@ public:
     ~Player();
 
     void Update(const double deltaTime);
-    void Render(HWND hwnd, HDC hdc, const double interpolation) const;
+    void Render(HDC hdcWindow, const BITMAP& bm, HDC hdcImage, const double interpolation) const;
 private:
 
 };

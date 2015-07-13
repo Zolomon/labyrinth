@@ -4,7 +4,7 @@ Level::Level() : Entity(true, 0, 0) {
 
 }
 
-void Level::Render(HWND hwnd, HDC hdc, const double interpolation) const {
+void Level::Render(HDC hdcWindow, const BITMAP& bm, HDC hdcImage, const double interpolation) const {
 
 }
 

@@ -17,16 +17,18 @@ public:
     ~Game() {};
 
     void Initialize();
+    void LoadResources();
     void Update(const double deltaTime);
     void Render(const double interpolation) const;
     void End();
 
     std::vector<std::shared_ptr<Entity>> entities;
     std::map<Resource, HBITMAP> bitmaps;
+    std::map<Resource, std::wstring> resourceFiles;
     HWND hwnd;
     HDC hdc;
 private:
-    HBITMAP LoadBitmap(Resource resource, wchar_t** filename);
+    HBITMAP LoadBitmap(Resource resource, std::wstring filename);
 };
 
 #endif
