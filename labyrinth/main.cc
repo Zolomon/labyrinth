@@ -121,6 +121,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         if (wParam == 'A')
             MessageBox(hwnd, _T("You pressed 'A'"), _T("Keydown"), MB_OK);
         break;
+    case WM_ERASEBKGND:
+        return 1;
     case WM_CLOSE:
         PostQuitMessage(0);
         return 0;
@@ -175,19 +177,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ShowWindow(hwnd, nCmdShow);
 
     game = std::make_shared<Game>(hwnd, GetDC(hwnd));
+    game->LoadResources();
     game->Initialize();
 
     MSG msg = {0};
 
-    const int FRAMES_PER_SEC = 60;
-    const int MS_PER_UPDATE = 1000 / FRAMES_PER_SEC;
+    const double FRAMES_PER_SEC = 60.0;
+    const double MS_PER_UPDATE = 1.0 / FRAMES_PER_SEC;
 
     auto previousTime = WindowOption::clock.now();
     double lag = 0.0;
     while(WindowOption::IsRunning) {
 
         auto currentTime = WindowOption::clock.now();
-        auto deltaTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - previousTime).count();
+        auto deltaTime = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - previousTime).count();
         previousTime = currentTime;
         lag += deltaTime;
 

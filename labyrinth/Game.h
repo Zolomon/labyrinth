@@ -2,13 +2,16 @@
 #define GAME_H
 
 #include <Windows.h>
+#include <algorithm>
+#include <iterator>
 #include <tchar.h>
+#include <cassert>
 #include <vector>
 #include <memory>
 #include <map>
 
-#include "Entity.h"
 #include "Resource.h"
+#include "Entity.h"
 #include "Player.h"
 
 class Game {
@@ -20,6 +23,7 @@ public:
     void LoadResources();
     void Update(const double deltaTime);
     void Render(const double interpolation) const;
+    void UnloadResources();
     void End();
 
     std::vector<std::shared_ptr<Entity>> entities;
@@ -29,6 +33,7 @@ public:
     HDC hdc;
 private:
     HBITMAP LoadBitmap(Resource resource, std::wstring filename);
+    bool HasLoaded;
 };
 
 #endif
