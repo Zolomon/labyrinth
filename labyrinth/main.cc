@@ -2,6 +2,7 @@
 #include <tchar.h>
 #include <vector>
 #include <chrono>
+#include <memory>
 
 #include "WindowOptions.h"
 #include "Entity.h"
@@ -21,7 +22,7 @@ const int BTN_EAST_ID = 5;
 const int BTN_SOUTH_ID = 6;
 const int BTN_WEST_ID = 7;
 
-Game* game;
+std::shared_ptr<Game> game;
 
 std::vector<int> WindowOption::ButtonIDs = []()->std::vector<int>{
     std::vector<int> v;
@@ -128,15 +129,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void Update(Game* game, const double deltaTime) {
+void Update(std::shared_ptr<Game> game, const double deltaTime) {
     game->Update(deltaTime);
 }
 
-void Render(Game* game,double interpolation) {
+void Render(std::shared_ptr<Game> game, double interpolation) {
     game->Render(interpolation);
 }
 
-void processInput(Game* game, MSG* msg) {
+void processInput(std::shared_ptr<Game> game, MSG* msg) {
     while(PeekMessage(msg, NULL, NULL, NULL, PM_REMOVE)) {
         if (msg->message == WM_QUIT) {
             WindowOption::IsRunning = false;
@@ -173,7 +174,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     UpdateWindow(hwnd);
     ShowWindow(hwnd, nCmdShow);
 
-    game = &Game(hwnd, GetDC(hwnd));
+    game = std::make_shared<Game>(hwnd, GetDC(hwnd));
     game->Initialize();
 
     MSG msg = {0};
@@ -190,15 +191,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         previousTime = currentTime;
         lag += deltaTime;
 
-        processInput(game, &msg);
+        processInput(std::move(game), &msg);
 
         while (lag >= MS_PER_UPDATE) {
-            Update(game, deltaTime);
+            Update(std::move(game), deltaTime);
             lag -= MS_PER_UPDATE;
         }
 
         auto interpolation = lag / MS_PER_UPDATE;
-        Render(game, interpolation);
+        Render(std::move(game), interpolation);
     }
 
     return msg.wParam;
