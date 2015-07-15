@@ -13,6 +13,7 @@
 #include "Resource.h"
 #include "Entity.h"
 #include "Player.h"
+#include "WindowOptions.h"
 
 class Game {
 public:
@@ -39,6 +40,8 @@ private:
     void SetupGDI();
     void TeardownGDI();
     HBITMAP LoadBitmap(Resource resource, std::wstring filename);
+    HBITMAP FindBitmap(Resource resource) const;
+    void RenderEntity(const std::shared_ptr<Entity>& entity, const double interpolation) const;
     bool HasLoaded;
 };
 

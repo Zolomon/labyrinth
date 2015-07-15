@@ -4,6 +4,7 @@
 #include <vector>
 #include <tuple>
 #include <tchar.h>
+#include <windows.h>
 #include <chrono>
 
 class WindowOption
@@ -25,6 +26,8 @@ public:
 
     static bool IsRunning;
     
+    static const RECT MAP_CANVAS_RECT;
+
     WindowOption();
     ~WindowOption();
 

@@ -6,6 +6,8 @@ const int WindowOption::HEIGHT = 460;
 const int WindowOption::StartPositionX = 0;
 const int WindowOption::StartPositionY = 0;
 
+const RECT WindowOption::MAP_CANVAS_RECT = { 0,  0, 16 * 20, 16 * 20 };
+
 std::vector<wchar_t*> WindowOption::ButtonLabels = []() -> std::vector<wchar_t*> {
     std::vector<wchar_t*> names;
     names.push_back(_T("North"));

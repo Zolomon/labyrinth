@@ -61,10 +61,46 @@ void Game::Update(const double deltaTime) {
     }
 }
 
-void Game::Render(const double interpolation) const {
-    HBITMAP image;
-    BITMAP bm;
+HBITMAP Game::FindBitmap(Resource resource) const {
+
+    auto bitmapSearch = bitmaps.find(resource);
+    if (bitmapSearch != bitmaps.end()) {
+        return bitmapSearch->second;  // load the image
+    }
+
+    MessageBox(this->hwnd, _T("Could not find correct image."), _T("Error"), MB_OK);
+    exit(1);
+}
+
+void Game::RenderEntity(const std::shared_ptr<Entity>& entity, const double interpolation) const {
+    // Create a temporary buffer to draw the bitmap on. 
+    HDC bmpHdc = CreateCompatibleDC(bufferHdc); 
+
+    HBITMAP image = FindBitmap(entity->resource);
+
+    // Load image into memory buffer for the bitmap, save handle to previous one.
+    HBITMAP hbmOld = (HBITMAP)SelectObject(bmpHdc, image); 
     
+    // Read image and put information inside the bitmap.
+    BITMAP bmp;
+    GetObject(image, sizeof(BITMAP), &bmp); 
+
+    // Render the entity by performing a bit block transfer.
+    // Use the handle to the memory buffer containing the bitmap data (bmpHdc)
+    // and transfer it onto temporary memory buffer used for double buffering
+    // (pointed to by bufferHdc).
+    entity->Render(this->bufferHdc, bmp, bmpHdc, interpolation); 
+
+    // Bit block transfer the data inside the temporary memory buffer of the 
+    // virtual device context (bufferHdc) into the main device context memory 
+    // buffer (hdc).
+    BitBlt(hdc, 0, 0, winRect.right, winRect.bottom, bufferHdc, 0, 0, SRCCOPY);
+
+    // Restore old object
+    SelectObject(bmpHdc, hbmOld);
+}
+
+void Game::Render(const double interpolation) const {
     // Get drawable entities
     std::vector<std::shared_ptr<Entity>> drawableEntities;
     auto it = std::copy_if(this->entities.begin(), this->entities.end(), 
@@ -72,44 +108,15 @@ void Game::Render(const double interpolation) const {
         [](const std::shared_ptr<Entity> e) { return e->IsDrawable; });
 
     
-    BitBlt(bufferHdc, 0, 0, winRect.right, winRect.bottom, NULL, 0, 0, WHITENESS);
-    
-    //Rectangle(bufferHdc, 0, 0, winRect.right, winRect.bottom);
-    
-    // Render 'em
+    // Clear canvas area where the tile map will be drawn
+    BitBlt(bufferHdc, WindowOption::MAP_CANVAS_RECT.left, 
+        WindowOption::MAP_CANVAS_RECT.top, 
+        WindowOption::MAP_CANVAS_RECT.right,
+        WindowOption::MAP_CANVAS_RECT.bottom, NULL, 0, 0, WHITENESS);
+        
+    // Render entities
     for(auto& entity : drawableEntities) {
-        HDC bmpHdc = CreateCompatibleDC(bufferHdc);
-        
-
-        auto bitmapSearch = bitmaps.find(entity->resource);
-        if (bitmapSearch != bitmaps.end()) {
-            image = bitmapSearch->second;    
-        }
-        else {
-            MessageBox(this->hwnd, _T("Could not find correct image."), _T("Error"), MB_OK);
-            exit(1);
-        }
-
-        HBITMAP hbmOld = (HBITMAP)SelectObject(bmpHdc, image);
-        //HBITMAP hbmOld = (HBITMAP)SelectObject(bufferHdc, image);
-        GetObject(image, sizeof(BITMAP), &bm);
-       
-        //SelectObject(bufferHdc, image);
-        //entity->Render(this->bufferHdc, bm, image, interpolation);
-        entity->Render(this->bufferHdc, bm, bmpHdc, interpolation);
-
-        BitBlt(hdc, 0, 0, winRect.right, winRect.bottom, bufferHdc, 0, 0, SRCCOPY);
-
-        
-        //SelectObject(bufferHdc, hbmOld);
-        SelectObject(bmpHdc, hbmOld);
-    }
-
-    //BitBlt(hdc, 0, 0, winRect.right, winRect.bottom, bufferHdc, 0, 0, SRCCOPY);
-
-    BOOL succeededInvalidation = InvalidateRect(hwnd, 0, false);
-    if (!succeededInvalidation) {
-        exit(1);
+        this->RenderEntity(entity, interpolation);
     }
 }
 
