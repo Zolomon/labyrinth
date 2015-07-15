@@ -121,6 +121,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         if (wParam == 'A')
             MessageBox(hwnd, _T("You pressed 'A'"), _T("Keydown"), MB_OK);
         break;
+    case WM_PAINT:
+    {
+        BITMAP bm;
+        PAINTSTRUCT ps;
+
+        HDC hdc = BeginPaint(hwnd, &ps);
+
+        EndPaint(hwnd, &ps);
+    }
+    break;
     case WM_ERASEBKGND:
         return 1;
     case WM_CLOSE:
@@ -183,7 +193,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     MSG msg = {0};
 
     const double FRAMES_PER_SEC = 60.0;
-    const double MS_PER_UPDATE = 1.0 / FRAMES_PER_SEC;
+    const double SEC_PER_UPDATE = 1.0 / FRAMES_PER_SEC;
 
     auto previousTime = WindowOption::clock.now();
     double lag = 0.0;
@@ -196,13 +206,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         processInput(game, &msg);
 
-        while (lag >= MS_PER_UPDATE) {
+        //while (lag >= MS_PER_UPDATE) {
             Update(game, deltaTime);
-            lag -= MS_PER_UPDATE;
-        }
+        //    lag -= MS_PER_UPDATE;
+        //}
 
-        auto interpolation = lag / MS_PER_UPDATE;
+            auto interpolation = lag / SEC_PER_UPDATE;
         Render(game, interpolation);
+        if (SEC_PER_UPDATE - deltaTime > 0)
+            Sleep(SEC_PER_UPDATE - deltaTime);
     }
 
     return msg.wParam;

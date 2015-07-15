@@ -31,7 +31,13 @@ public:
     std::map<Resource, std::wstring> resourceFiles;
     HWND hwnd;
     HDC hdc;
+    HBITMAP bufferBitmap;
+    HDC bufferHdc;
+    RECT winRect;
+    HGDIOBJ oldGdiObj;
 private:
+    void SetupGDI();
+    void TeardownGDI();
     HBITMAP LoadBitmap(Resource resource, std::wstring filename);
     bool HasLoaded;
 };

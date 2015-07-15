@@ -5,7 +5,6 @@ Game::Game(HWND hwnd, HDC hdc) : hwnd(hwnd), hdc(hdc), entities(), resourceFiles
 }
 
 void Game::Initialize() {
-
     assert(this->HasLoaded);
 
     this->entities.clear();
@@ -15,18 +14,45 @@ void Game::Initialize() {
     this->entities.push_back(player);
 }
 
-void Game::LoadResources() {
-    LoadBitmap(Resource::PlayerTile, std::wstring(_T("player.bmp")));
-    HasLoaded = true;
+void Game::SetupGDI() {
+    GetClientRect(this->hwnd, &this->winRect);
+    int winWidth = winRect.right;
+    int winHeight = winRect.bottom;
+
+    this->bufferHdc = CreateCompatibleDC(this->hdc);
+    this->bufferBitmap = CreateCompatibleBitmap(this->hdc, winWidth, winHeight);
+
+    oldGdiObj = SelectObject(bufferHdc, bufferBitmap);
 }
 
-void Game::UnloadResources() {
+void Game::LoadResources() {
+    this->SetupGDI();
+    
+    // Load assets
+    LoadBitmap(Resource::PlayerTile, std::wstring(_T("player.bmp")));
+    this->HasLoaded = true;
+}
+
+void Game::TeardownGDI() {
+    // Restore old object
+    SelectObject(hdc, oldGdiObj);
+
+    // Clean GDI
+    DeleteDC(this->bufferHdc);
+    DeleteObject(this->bufferBitmap);
+
     for (auto& kv : this->bitmaps) {
         DeleteObject(kv.second);
     }
-    bitmaps.clear();
-    resourceFiles.clear();
-    HasLoaded = false;
+}
+
+void Game::UnloadResources() {
+    this->TeardownGDI();
+
+    // Clean assets
+    this->bitmaps.clear();
+    this->resourceFiles.clear();
+    this->HasLoaded = false;
 }
 
 void Game::Update(const double deltaTime) {
@@ -38,32 +64,48 @@ void Game::Update(const double deltaTime) {
 void Game::Render(const double interpolation) const {
     HBITMAP image;
     BITMAP bm;
-
+    
     // Get drawable entities
     std::vector<std::shared_ptr<Entity>> drawableEntities;
     auto it = std::copy_if(this->entities.begin(), this->entities.end(), 
         std::back_inserter(drawableEntities), 
         [](const std::shared_ptr<Entity> e) { return e->IsDrawable; });
 
+    
+    BitBlt(bufferHdc, 0, 0, winRect.right, winRect.bottom, NULL, 0, 0, WHITENESS);
+    
+    //Rectangle(bufferHdc, 0, 0, winRect.right, winRect.bottom);
+    
     // Render 'em
     for(auto& entity : drawableEntities) {
+        HDC bmpHdc = CreateCompatibleDC(bufferHdc);
+        
+
         auto bitmapSearch = bitmaps.find(entity->resource);
         if (bitmapSearch != bitmaps.end()) {
-            image = bitmapSearch->second;
-            GetObject(image, sizeof(BITMAP), &bm);
+            image = bitmapSearch->second;    
         }
         else {
             MessageBox(this->hwnd, _T("Could not find correct image."), _T("Error"), MB_OK);
             exit(1);
         }
 
-        HDC hdcMem = CreateCompatibleDC(this->hdc);
-        SelectObject(hdcMem, image);
+        HBITMAP hbmOld = (HBITMAP)SelectObject(bmpHdc, image);
+        //HBITMAP hbmOld = (HBITMAP)SelectObject(bufferHdc, image);
+        GetObject(image, sizeof(BITMAP), &bm);
+       
+        //SelectObject(bufferHdc, image);
+        //entity->Render(this->bufferHdc, bm, image, interpolation);
+        entity->Render(this->bufferHdc, bm, bmpHdc, interpolation);
 
-        entity->Render(this->hdc, bm, hdcMem, interpolation);
+        BitBlt(hdc, 0, 0, winRect.right, winRect.bottom, bufferHdc, 0, 0, SRCCOPY);
 
-        DeleteDC(hdcMem);
+        
+        //SelectObject(bufferHdc, hbmOld);
+        SelectObject(bmpHdc, hbmOld);
     }
+
+    //BitBlt(hdc, 0, 0, winRect.right, winRect.bottom, bufferHdc, 0, 0, SRCCOPY);
 
     BOOL succeededInvalidation = InvalidateRect(hwnd, 0, false);
     if (!succeededInvalidation) {
