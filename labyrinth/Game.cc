@@ -15,12 +15,8 @@ void Game::Initialize() {
 }
 
 void Game::SetupGDI() {
-    GetClientRect(this->hwnd, &this->winRect);
-    int winWidth = winRect.right;
-    int winHeight = winRect.bottom;
-
     this->bufferHdc = CreateCompatibleDC(this->hdc);
-    this->bufferBitmap = CreateCompatibleBitmap(this->hdc, winWidth, winHeight);
+    this->bufferBitmap = CreateCompatibleBitmap(this->hdc, WindowOption::MAP_CANVAS_RECT.right, WindowOption::MAP_CANVAS_RECT.bottom);
 
     oldGdiObj = SelectObject(bufferHdc, bufferBitmap);
 }
@@ -98,6 +94,7 @@ void Game::RenderEntity(const std::shared_ptr<Entity>& entity, const double inte
 
     // Restore old object
     SelectObject(bmpHdc, hbmOld);
+    DeleteDC(bmpHdc);
 }
 
 void Game::Render(const double interpolation) const {

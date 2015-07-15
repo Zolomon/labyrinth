@@ -123,12 +123,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
     case WM_PAINT:
     {
-        BITMAP bm;
-        PAINTSTRUCT ps;
+        //BITMAP bm;
+        //PAINTSTRUCT ps;
 
-        HDC hdc = BeginPaint(hwnd, &ps);
+        //HDC hdc = BeginPaint(hwnd, &ps);
 
-        EndPaint(hwnd, &ps);
+        //EndPaint(hwnd, &ps);
     }
     break;
     case WM_ERASEBKGND:
@@ -202,17 +202,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         auto currentTime = WindowOption::clock.now();
         auto deltaTime = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - previousTime).count();
         previousTime = currentTime;
-        lag += deltaTime;
+        //lag += deltaTime;
 
         processInput(game, &msg);
 
-        //while (lag >= MS_PER_UPDATE) {
+        //while (lag >= SEC_PER_UPDATE) {
             Update(game, deltaTime);
-        //    lag -= MS_PER_UPDATE;
+        //    lag -= SEC_PER_UPDATE;
         //}
 
-            auto interpolation = lag / SEC_PER_UPDATE;
-        Render(game, interpolation);
+            //auto interpolation = lag / SEC_PER_UPDATE;
+
+        Render(game, 1.0);
         if (SEC_PER_UPDATE - deltaTime > 0)
             Sleep(SEC_PER_UPDATE - deltaTime);
     }

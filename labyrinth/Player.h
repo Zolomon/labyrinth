@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "Entity.h"
+#include "WindowOptions.h"
 
 class Player : public Entity
 {

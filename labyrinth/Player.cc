@@ -11,6 +11,10 @@ void Player::Render(HDC hdcWindow, const BITMAP& bm, HDC bufferHdc, const double
 }
 
 void Player::Update(const double deltaTime) {
-    this->x += 3*deltaTime;
+    this->x += 20*deltaTime;
+    
+    if (this->x > WindowOption::MAP_CANVAS_RECT.right) {
+        this->x -= WindowOption::MAP_CANVAS_RECT.right;
+    }
     //this->y += deltaTime
 }
