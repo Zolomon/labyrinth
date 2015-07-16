@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include "Resource.h"
+#include "Bitmap.h"
 
 class Entity
 {
@@ -11,7 +12,8 @@ public:
     virtual ~Entity();
 
     virtual void Update(const double deltaTime) = 0;
-    virtual void Render(HDC hdcWindow, const BITMAP& bm, HDC hdcImage, const double interpolation) const = 0;    
+    //virtual void Render(HDC hdcWindow, const BITMAP& bm, HDC hdcImage, const double interpolation) const = 0;
+    //virtual void Render(const Game& game, const double interpolation) const = 0;
 
     double x;
     double y;
@@ -19,7 +21,6 @@ public:
     double vx;
     double vy;
 
-    BITMAP bm;
     Resource resource;
 
     const bool IsDrawable;

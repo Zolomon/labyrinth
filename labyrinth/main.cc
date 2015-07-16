@@ -123,12 +123,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
     case WM_PAINT:
     {
-        //BITMAP bm;
-        //PAINTSTRUCT ps;
-
-        //HDC hdc = BeginPaint(hwnd, &ps);
-
-        //EndPaint(hwnd, &ps);
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        EndPaint(hwnd, &ps);
+        return 0;
     }
     break;
     case WM_ERASEBKGND:
@@ -186,9 +184,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     UpdateWindow(hwnd);
     ShowWindow(hwnd, nCmdShow);
 
-    game = std::make_shared<Game>(hwnd, GetDC(hwnd));
-    game->LoadResources();
-    game->Initialize();
+    //game = std::make_shared<Game>(hwnd, GetDC(hwnd));
+    game = std::make_shared<Game>();
+    //game->LoadResources();
+    //game->Initialize();
+    game->InitializeGraphics(hwnd);
+    
+    //game->Start();
 
     MSG msg = {0};
 
@@ -214,9 +216,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             //auto interpolation = lag / SEC_PER_UPDATE;
 
         Render(game, 1.0);
+        //InvalidateRect(hwnd, 0, false);
+
         if (SEC_PER_UPDATE - deltaTime > 0)
             Sleep(SEC_PER_UPDATE - deltaTime);
     }
-
+    
     return msg.wParam;
 }

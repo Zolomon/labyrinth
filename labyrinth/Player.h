@@ -11,7 +11,10 @@ public:
     ~Player();
 
     void Update(const double deltaTime);
-    void Render(HDC hdcWindow, const BITMAP& bm, HDC hdcImage, const double interpolation) const;
+    //void Render(const Game& game, const double interpolation) const;
+
+    const double GetDrawX() const;
+    const double GetDrawY() const;
 private:
 
 };

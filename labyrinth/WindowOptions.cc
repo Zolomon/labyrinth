@@ -18,7 +18,7 @@ std::vector<wchar_t*> WindowOption::ButtonLabels = []() -> std::vector<wchar_t*>
 }();
 
 std::vector<std::tuple<int, int>> WindowOption::ButtonPositions = []() -> std::vector<std::tuple<int,int>> {
-    int x = 100;
+    int x = 350;
     int y = 100;
     std::vector<std::tuple<int,int>> v; 
     v.push_back(std::make_pair(x,y));  // north
