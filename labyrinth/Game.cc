@@ -1,16 +1,16 @@
 #include "Game.h"
 
-void Game::InitializeGraphics(void* window)
+void Game::InitializeGraphics(HWND window)
 {
     // spara undan fönsterhandtaget. anledningen att den ör void* ör för att
     // slippa #include <Windows.h> i headern
-    this->window = (HWND)window;
+    this->window = window;
 
     // skapa en DC för backbuffern som har samma format som fönstret
     HDC hdc = GetDC(this->window);
     backbufferDC = CreateCompatibleDC(hdc);
 
-    // ta reda pö hur stort fönstret ör
+    // ta reda på hur stort fönstret ör
     RECT windowSize = { 0 };
     windowSize = WindowOption::MAP_CANVAS_RECT;
 
@@ -21,29 +21,51 @@ void Game::InitializeGraphics(void* window)
     backbufferBitmap = CreateCompatibleBitmap(hdc, windowWidth, windowHeight);
     SelectObject(backbufferDC, backbufferBitmap);
 
-    // sött textbakgrunden genomskinlig
+    // sätt textbakgrunden genomskinlig
     SetBkMode(backbufferDC, TRANSPARENT);
 
     // skapa en DC för utritning av bilder
     bitmapDC = CreateCompatibleDC(hdc);
 
-    LoadBitmapFromFile(std::wstring(_T("player.bmp")), this->player, Resource::PlayerTile);
+    // Load assets
+    Bitmap bm;
+    LoadBitmapFromFile(std::wstring(_T("wall.bmp")), bm, Resource::WallTile);
+    LoadBitmapFromFile(std::wstring(_T("grass.bmp")), bm, Resource::GrassTile);
+    LoadBitmapFromFile(std::wstring(_T("start.bmp")), bm, Resource::StartTile);
+    LoadBitmapFromFile(std::wstring(_T("end.bmp")), bm, Resource::EndTile);
+    
+    LoadBitmapFromFile(std::wstring(_T("player.bmp")), bm, Resource::PlayerTile);
 
-    auto player = std::make_shared<Player>(0, 0);
+    this->player = std::make_shared<Player>(0, 0);
     player->resource = Resource::PlayerTile;
 
+    // Initialize entities
     this->entities.push_back(player);
 }
 
+void Game::DrawLevel() {
+    for (int y = 0; y < currentLevel->TILES_PER_ROW; y++) {
+        for (int x = 0; x < currentLevel->TILES_PER_COLUMN; x++) {
+            auto resource = currentLevel->tiles[x + (y * currentLevel->TILES_PER_COLUMN)];
+            DrawBitmap(bitmapDictionary[resource], x * WindowOption::TILE_WIDTH, y * WindowOption::TILE_HEIGHT);
+        }
+    }
+}
 
 void Game::Render(const double interpolation) {
     BeginGraphics();
+
+    //currentLevel->Render(game, 1.0);
+    DrawLevel();
 
     for (auto& entity : entities) {
         DrawBitmap(bitmapDictionary.at(entity->resource), entity->x, entity->y);
     }
 
-    DrawString(std::wstring(_T("Du har noll poäng. Din nolla!")), 0, 0);
+  /*  std::stringstream scoreText;
+    scoreText << "Total score: " << score;
+    std::string str = scoreText.str();
+    DrawString(str, 0, 0);*/
 
     EndGraphics();
 }
@@ -108,6 +130,7 @@ void Game::EndGraphics()
 
 void Game::FreeBitmap(Bitmap bitmap)
 {
+    // Find the resource, from the bitmap, to free
     auto findResult = std::find_if(std::begin(bitmapDictionary), std::end(bitmapDictionary), [&](const std::pair<Resource, Bitmap>& pair) {
         return pair.second.index == bitmap.index;
     });
@@ -133,7 +156,10 @@ void Game::FreeBitmap(Bitmap bitmap)
 
 void Game::ShutdownGraphics()
 {
-    FreeBitmap(this->player);
+    //FreeBitmap(this->player);
+    //for (auto& bmp : bitmaps) {
+    //    FreeBitmap(bmp);
+    //}
 
     // fria alla resurser som anvönds av grafiksystemet
     DeleteDC(this->bitmapDC);
@@ -142,10 +168,20 @@ void Game::ShutdownGraphics()
     DeleteDC(this->backbufferDC);
 }
 
+void Game::AddLevel(std::shared_ptr<Level> level) {
+    this->levels.push_back(level);
+    currentLevel = level;
+}
+
+
 void Game::Update(const double deltaTime) {
     for (auto& entity : entities) {
         entity->Update(deltaTime);
     }
+}
+
+void Game::Restart() {
+    
 }
 
 //Game::Game(HWND hwnd, HDC hdc) : hwnd(hwnd), hdc(hdc), entities(), resourceFiles(), HasLoaded(false) {

@@ -14,6 +14,7 @@ public:
     virtual void Update(const double deltaTime) = 0;
     //virtual void Render(HDC hdcWindow, const BITMAP& bm, HDC hdcImage, const double interpolation) const = 0;
     //virtual void Render(const Game& game, const double interpolation) const = 0;
+    
 
     double x;
     double y;

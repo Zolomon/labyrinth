@@ -3,8 +3,10 @@
 
 enum Resource
 {
-    PlayerTile,
+    EndTile,
     GrassTile,
+    StartTile,
+    PlayerTile,    
     WallTile
 };
 

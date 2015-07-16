@@ -1,11 +1,6 @@
 #include "Level.h"
 
-Level::Level() : Entity(true, 0, 0) {
-
-}
-
-void Level::Render(HDC hdcWindow, const BITMAP& bm, HDC hdcImage, const double interpolation) const {
-
+Level::Level(std::vector<Resource> tiles, int tilesPerCol, int tilesPerRow) : Entity(true, 0, 0), tiles(tiles), TILES_PER_COLUMN(tilesPerCol), TILES_PER_ROW(tilesPerRow) {
 }
 
 void Level::Update(const double deltaTime) {

@@ -14,6 +14,8 @@ public:
     static const int HEIGHT;
     static const int StartPositionX;
     static const int StartPositionY;
+    static const int TILE_WIDTH;
+    static const int TILE_HEIGHT;
 
     static std::vector<std::tuple<int, int>> ButtonPositions;
     static std::vector<wchar_t*> ButtonLabels;

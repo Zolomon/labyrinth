@@ -6,15 +6,18 @@
 #include <iterator>
 #include <tchar.h>
 #include <cassert>
+#include <sstream>
 #include <vector>
 #include <memory>
 #include <map>
+
 
 #include "Resource.h"
 #include "Entity.h"
 #include "Player.h"
 #include "WindowOptions.h"
 #include "Bitmap.h"
+#include "Level.h"
 
 class Game {
 public:
@@ -22,7 +25,7 @@ public:
     Game() {};
     ~Game() {};
 
-    void InitializeGraphics(void* window);
+    void InitializeGraphics(HWND window);
     bool LoadBitmapFromFile(const std::wstring filename, Bitmap& bitmap, Resource resource);
     void Render(const double interpolation);
     void BeginGraphics();
@@ -31,12 +34,19 @@ public:
     void EndGraphics();
     void FreeBitmap(Bitmap bitmap);
     void ShutdownGraphics();
+
+    void Restart();
         
     void Update(const double deltaTime);
 
+    void AddLevel(std::shared_ptr<Level> level);
+
+    std::vector<std::shared_ptr<Level>> levels;
     std::vector<std::shared_ptr<Entity>> entities;
     std::map<Resource, Bitmap> bitmapDictionary;
     std::map<Resource, std::wstring> fileDictionary;
+
+    std::shared_ptr<Level> currentLevel;
 
     HWND window;
     int windowWidth;
@@ -58,32 +68,16 @@ public:
         {
         }
     };
-
+    
     std::vector<GDIBitmap> bitmaps;
 
-    Bitmap player;
+    std::shared_ptr<Player> player;
+    Bitmap playerBitmap;
+    int score;
 
-   /* void Initialize();
-    void LoadResources();
-    void Update(const double deltaTime);
-    void Render(const double interpolation) const;
-    void Game::DrawBitmap(HBITMAP bitmap, int x, int y, int width, int height);
-    void UnloadResources();
-    void End();
-
-    
-    HWND hwnd;
-    HDC hdc;
-    HBITMAP bufferBitmap;
-    HDC bufferHdc;
-    RECT winRect;
-    HGDIOBJ oldGdiObj;*/
+ 
 private:
-  /*  void SetupGDI();
-    void TeardownGDI();
-    HBITMAP LoadBitmap(Resource resource, std::wstring filename);
-    void RenderEntity(const std::shared_ptr<Entity>& entity, const double interpolation) const;
-    bool HasLoaded;*/
+    void DrawLevel();
 };
 
 #endif

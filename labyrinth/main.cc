@@ -7,6 +7,8 @@
 #include "WindowOptions.h"
 #include "Entity.h"
 #include "Game.h"
+#include "Level.h"
+#include "Utils.h"
 
 HWND btnNorth = NULL;
 HWND btnEast  = NULL;
@@ -23,6 +25,7 @@ const int BTN_SOUTH_ID = 6;
 const int BTN_WEST_ID = 7;
 
 std::shared_ptr<Game> game;
+std::weak_ptr<Game> wGame;
 
 std::vector<int> WindowOption::ButtonIDs = []()->std::vector<int>{
     std::vector<int> v;
@@ -143,7 +146,7 @@ void Update(const std::shared_ptr<Game>&, const double deltaTime) {
     game->Update(deltaTime);
 }
 
-void Render(const std::shared_ptr<Game>&, double interpolation) {
+void Render(double interpolation) {
     game->Render(interpolation);
 }
 
@@ -190,6 +193,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     //game->Initialize();
     game->InitializeGraphics(hwnd);
     
+    std::shared_ptr<Level> level0 = Utils::loadLevel(std::string("levels/level0.txt"));
+
+    game->AddLevel(level0);
+    
     //game->Start();
 
     MSG msg = {0};
@@ -215,7 +222,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
             //auto interpolation = lag / SEC_PER_UPDATE;
 
-        Render(game, 1.0);
+        Render(1.0);
         //InvalidateRect(hwnd, 0, false);
 
         if (SEC_PER_UPDATE - deltaTime > 0)

@@ -31,4 +31,7 @@ std::vector<std::tuple<int, int>> WindowOption::ButtonPositions = []() -> std::v
 const int WindowOption::ButtonWidth  = 50;
 const int WindowOption::ButtonHeight = 24;
 
+const int WindowOption::TILE_WIDTH = 16;
+const int WindowOption::TILE_HEIGHT = 16;
+
 bool WindowOption::IsRunning = true;

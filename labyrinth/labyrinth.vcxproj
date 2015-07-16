@@ -83,6 +83,7 @@
     <ClCompile Include="Level.cc" />
     <ClCompile Include="main.cc" />
     <ClCompile Include="Player.cc" />
+    <ClCompile Include="Utils.cc" />
     <ClCompile Include="WindowOptions.cc" />
   </ItemGroup>
   <ItemGroup>

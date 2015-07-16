@@ -33,6 +33,9 @@
     <ClCompile Include="Game.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Utils.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowOptions.h">
