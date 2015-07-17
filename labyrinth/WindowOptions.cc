@@ -1,7 +1,7 @@
 #include "WindowOptions.h"
 
-const int WindowOption::WIDTH = 600;
-const int WindowOption::HEIGHT = 460;
+const int WindowOption::WIDTH = 445;
+const int WindowOption::HEIGHT = 380;
 
 const int WindowOption::StartPositionX = 0;
 const int WindowOption::StartPositionY = 0;

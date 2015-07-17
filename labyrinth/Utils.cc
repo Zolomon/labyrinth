@@ -1,6 +1,5 @@
 #include "Utils.h"
 
-
 std::shared_ptr<Level> Utils::loadLevel(std::string filename) {
     std::ifstream fileStream(filename);
     std::string line;

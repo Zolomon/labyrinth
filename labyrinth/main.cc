@@ -11,9 +11,9 @@
 #include "Utils.h"
 
 HWND btnNorth = NULL;
-HWND btnEast  = NULL;
+HWND btnEast = NULL;
 HWND btnSouth = NULL;
-HWND btnWest  = NULL;
+HWND btnWest = NULL;
 
 const int ID_OPEN = 1;
 const int ID_QUIT = 2;
@@ -27,7 +27,7 @@ const int BTN_WEST_ID = 7;
 std::shared_ptr<Game> game;
 std::weak_ptr<Game> wGame;
 
-std::vector<int> WindowOption::ButtonIDs = []()->std::vector<int>{
+std::vector<int> WindowOption::ButtonIDs = []()->std::vector < int > {
     std::vector<int> v;
     v.push_back(BTN_NORTH_ID);
     v.push_back(BTN_EAST_ID);
@@ -41,7 +41,7 @@ std::vector<Entity*> entities;
 HMENU CreateMainMenu()
 {
     HMENU file = CreateMenu();
-    AppendMenu(file, MF_STRING, ID_OPEN, _T("&Open"));
+    AppendMenu(file, MF_STRING, ID_OPEN, _T("&New"));
     AppendMenu(file, MF_SEPARATOR, 0, 0);
     AppendMenu(file, MF_STRING, ID_QUIT, _T("&Quit"));
 
@@ -51,9 +51,7 @@ HMENU CreateMainMenu()
     HMENU main = CreateMenu();
     AppendMenu(main, MF_POPUP, (UINT_PTR)file, _T("&File"));
     AppendMenu(main, MF_POPUP, (UINT_PTR)help, _T("&Help"));
-
-    EnableMenuItem(main, ID_OPEN, MF_BYCOMMAND | MF_GRAYED);
-
+    
     return main;
 }
 
@@ -69,7 +67,7 @@ void SetupButtons(HWND hwnd, HINSTANCE hInstance) {
     size_t btnIndex = 0;
     for (HWND* btn : buttons) {
         int x, y;
-        std::tie(x,y) = WindowOption::ButtonPositions[btnIndex];
+        std::tie(x, y) = WindowOption::ButtonPositions[btnIndex];
 
         wchar_t* name = WindowOption::ButtonLabels[btnIndex];
 
@@ -90,39 +88,54 @@ void SetupButtons(HWND hwnd, HINSTANCE hInstance) {
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch(msg) {
+
+    // TODO: fix duplication, casting char/ID to enum directly.
+    switch (msg) {
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
         case ID_QUIT:
             PostQuitMessage(0);
             return 0;
             break;
-        case ID_ABOUT:
-            MessageBox(hwnd, _T("About this program!"), _T("About"), MB_OK);
+        case ID_ABOUT: {
+            std::wstring about(   _T("You are a lonely duck trying to get home. \r\n"));
+            about += std::wstring(_T("Can you reach the exit in least amount of steps?\r\n"));
+            about += std::wstring(_T("Use the buttons or WASD-keys to explore the maze!\r\n"));
+            MessageBox(hwnd, about.c_str(), _T("About Labyrinth"), MB_OK);
+        }
+            break;
+        case ID_OPEN:
+            game->Start();
             break;
         case BTN_NORTH_ID:
-            MessageBox(hwnd, _T("You clicked north!"), _T("Direction"), MB_OK);
+            game->ProcessInput(Command::MoveNorth);
             break;
         case BTN_EAST_ID:
-            MessageBox(hwnd, _T("You clicked east!"), _T("Direction"), MB_OK);
+            game->ProcessInput(Command::MoveEast);
             break;
         case BTN_SOUTH_ID:
-            MessageBox(hwnd, _T("You clicked south!"), _T("Direction"), MB_OK);
+            game->ProcessInput(Command::MoveSouth);
             break;
         case BTN_WEST_ID:
-            MessageBox(hwnd, _T("You clicked west!"), _T("Direction"), MB_OK);
+            game->ProcessInput(Command::MoveWest);
             break;
         }
         break;
     case WM_KEYDOWN:
-        if (wParam == 'W')
-            MessageBox(hwnd, _T("You pressed 'W'"), _T("Keydown"), MB_OK);
-        if (wParam == 'D')
-            MessageBox(hwnd, _T("You pressed 'D'"), _T("Keydown"), MB_OK);
-        if (wParam == 'S')
-            MessageBox(hwnd, _T("You pressed 'S'"), _T("Keydown"), MB_OK);
-        if (wParam == 'A')
-            MessageBox(hwnd, _T("You pressed 'A'"), _T("Keydown"), MB_OK);
+        switch (wParam) {
+        case 'W':
+            game->ProcessInput(Command::MoveNorth);
+            break;
+        case 'D':
+            game->ProcessInput(Command::MoveEast);
+            break;
+        case 'S':
+            game->ProcessInput(Command::MoveSouth);
+            break;
+        case 'A':
+            game->ProcessInput(Command::MoveWest);
+            break;
+        }
         break;
     case WM_PAINT:
     {
@@ -142,16 +155,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void Update(const std::shared_ptr<Game>&, const double deltaTime) {
-    game->Update(deltaTime);
-}
-
 void Render(double interpolation) {
     game->Render(interpolation);
 }
 
 void processInput(const std::shared_ptr<Game>& game, MSG* msg) {
-    while(PeekMessage(msg, NULL, NULL, NULL, PM_REMOVE)) {
+    while (PeekMessage(msg, NULL, NULL, NULL, PM_REMOVE)) {
         if (msg->message == WM_QUIT) {
             WindowOption::IsRunning = false;
         }
@@ -165,7 +174,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wchar_t className[] = _T("LabyrinthClass");
     wchar_t windowName[] = _T("Labyrinth");
 
-    WNDCLASS wc = {0};
+    WNDCLASS wc = { 0 };
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = className;
@@ -187,47 +196,34 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     UpdateWindow(hwnd);
     ShowWindow(hwnd, nCmdShow);
 
-    //game = std::make_shared<Game>(hwnd, GetDC(hwnd));
     game = std::make_shared<Game>();
-    //game->LoadResources();
-    //game->Initialize();
     game->InitializeGraphics(hwnd);
-    
+
     std::shared_ptr<Level> level0 = Utils::loadLevel(std::string("levels/level0.txt"));
-
     game->AddLevel(level0);
-    
-    //game->Start();
 
-    MSG msg = {0};
+    game->Start();
+
+    MSG msg = { 0 };
 
     const double FRAMES_PER_SEC = 60.0;
     const double SEC_PER_UPDATE = 1.0 / FRAMES_PER_SEC;
 
     auto previousTime = WindowOption::clock.now();
     double lag = 0.0;
-    while(WindowOption::IsRunning) {
+    while (WindowOption::IsRunning) {
 
         auto currentTime = WindowOption::clock.now();
         auto deltaTime = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - previousTime).count();
         previousTime = currentTime;
-        //lag += deltaTime;
 
         processInput(game, &msg);
-
-        //while (lag >= SEC_PER_UPDATE) {
-            Update(game, deltaTime);
-        //    lag -= SEC_PER_UPDATE;
-        //}
-
-            //auto interpolation = lag / SEC_PER_UPDATE;
-
         Render(1.0);
-        //InvalidateRect(hwnd, 0, false);
+        game->CheckWinningCondition();
 
         if (SEC_PER_UPDATE - deltaTime > 0)
             Sleep(SEC_PER_UPDATE - deltaTime);
     }
-    
+
     return msg.wParam;
 }
